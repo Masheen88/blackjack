@@ -76,17 +76,22 @@ class Game {
     this.deck = [];
 
     let playerName = "Matthew";
-    this.player = new Player(playerName, 1000); //creates a new player
+    this.player = new Player(playerName, 1000); //creates a new player and starts them with $1000
 
-    this.playerName = this.player.name + "'s";
+    this.playerName = this.player.name + "'s"; //Cool way to display the player's name with an apostrophe
 
     this.dealer = new Player("Dealer", 999999999); //creates a new dealer (CPU), dealer starts with 999999999 money
-    this.dealerName = this.dealer.name + "'s";
+    this.dealerName = this.dealer.name + "'s"; //Cool way to display the dealer's name with an apostrophe
 
     this.playerTurn = null;
   }
 
   play() {
+    if (this.player.money <= 0) {
+      console.log("You are out of money!");
+      return;
+    }
+
     //clear the player and dealer hands
     this.player.hand = [];
     this.dealer.hand = [];
@@ -110,34 +115,30 @@ class Game {
   }
 
   runPlayerTurn() {
-    //player places a bet
-    //player is dealt two cards
-    //player can choose to hit or stay
-    //if player hits, player is dealt another card
-    //if player stays, player's turn is over
-    //if player busts, player's turn is over
-    //if player has 21, player's turn is over
-    this.playerTurn = true;
+    this.playerTurn = true; ///sets the player's turn to true
 
+    //Prompts the player on how much to bet.
     let playerBet = prompt(
       `How much would you like to bet? You have $${this.player.money}`
     );
     //subtract the bet from the player's money
     this.player.money -= playerBet;
-
     console.log(this.playerName, "money:", this.player.money);
 
+    //deal two cards to the player
     this.player.takeCard(this.deck);
     this.player.takeCard(this.deck);
+
     //add two card ranks to the player's total
     this.player.total = this.player.hand[0].rank + this.player.hand[1].rank;
-
     console.log(this.playerName, "hand:", this.player.hand);
-
     console.log(this.playerName, "total:", this.player.total);
 
+    //prompts the player to hit or stay
     let playerChoice = prompt(
-      `Would you like to hit or stay? You have $${this.player.money}`
+      `Would you like to hit or stay?
+      
+      You have $${this.player.money}`
     );
 
     //continue to prompt for a hit or stay until the player busts or stays
@@ -146,18 +147,18 @@ class Game {
       //add the card rank to the player's total
       this.player.total += this.player.hand[this.player.hand.length - 1].rank;
       console.log(this.playerName, "total:", this.player.total);
-      //if the player busts, the player's turn is over
+
+      //if the player busts.
       if (this.player.total > 21) {
-        console.log(
-          "You busted!",
-          this.playerName,
-          "total:",
-          this.player.total
-        );
+        console.log(`
+          You busted!
+          ${this.playerName} total: ${this.player.total}
+          `);
 
         this.playerTurn = false;
         this.player.busted = true;
-        //start the game over again
+
+        //checks for a winner
         this.checkForWinner(playerBet);
       }
       console.log(this.playerName, "hand:", this.player.hand);
@@ -177,12 +178,8 @@ class Game {
   runDealerTurn(playerBet) {
     console.log("Player Bet:", playerBet);
     console.log("Dealer's turn", this.dealerName, "money:", this.dealer.money);
-    //dealer is dealt two cards
-    //dealer must hit until total is 17 or higher
-    //if dealer busts, dealer's turn is over
-    //if dealer has 21, dealer's turn is over
-    //if dealer has 17 or higher, dealer's turn is over
 
+    // deal two cards to the dealer
     this.dealer.takeCard(this.deck);
     this.dealer.takeCard(this.deck);
     console.log(this.dealerName, "hand:", this.dealer.hand);
@@ -194,9 +191,11 @@ class Game {
     //continue to hit until the dealer busts or has 17 or higher
     while (this.dealer.total < 17) {
       this.dealer.takeCard(this.deck);
+
       //add the card rank to the dealer's total
       this.dealer.total += this.dealer.hand[this.dealer.hand.length - 1].rank;
       console.log(this.dealerName, "total:", this.dealer.total);
+
       //if the dealer busts, the dealer's turn is over
       if (this.dealer.total > 21) {
         console.log(
@@ -225,17 +224,14 @@ class Game {
   }
 
   checkForWinner(playerBet) {
-    //if player has higher total than dealer, player wins
-    //if dealer has higher total than player, dealer wins
     //if player and dealer have the same total, it's a tie
-
     if (this.player.total === this.dealer.total) {
       console.log("It's a tie!");
     }
     //if player has 21, player wins and dealer is less than 21 || if dealer busts, player wins
     else if (
       (this.player.total === 21 && this.dealer.total < 21) ||
-      this.dealer.busted === true
+      (this.dealer.busted === true && this.player.busted === false)
     ) {
       this.player.money += playerBet * 2;
       console.log(`${this.playerName} wins!`);
@@ -243,7 +239,7 @@ class Game {
     //if dealer has 21, dealer wins player is less than 21 || if player busts, dealer wins
     else if (
       (this.dealer.total === 21 && this.player.total < 21) ||
-      this.player.busted === true
+      (this.player.busted === true && this.dealer.busted === false)
     ) {
       this.dealer.money += playerBet;
       console.log(`${this.dealerName} wins!`);
